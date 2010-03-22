@@ -1310,7 +1310,6 @@ rbtree_bound_body(VALUE arg_)
     dict_t* dict = DICT(self);
     dnode_t* lower_node = arg->lower_node;
     dnode_t* upper_node = arg->upper_node;
-    const int block_given = rb_block_given_p();
     VALUE ret = arg->ret;
     dnode_t* node;
 
@@ -1318,10 +1317,29 @@ rbtree_bound_body(VALUE arg_)
     for (node = lower_node;;
          node = dict_next(dict, node)) {
 
-        if (block_given)
-            rb_yield_values(2, GET_KEY(node), GET_VAL(node));
-        else
-            rb_ary_push(ret, ASSOC(node));
+        rb_yield_values(2, GET_KEY(node), GET_VAL(node));
+        if (node == upper_node)
+            break;
+    }
+    return ret;
+}
+
+static VALUE
+rbtree_bound_push(VALUE arg_)
+{
+    rbtree_bound_arg_t* arg = (rbtree_bound_arg_t*)arg_;
+    VALUE self = arg->self;
+    dict_t* dict = DICT(self);
+    dnode_t* lower_node = arg->lower_node;
+    dnode_t* upper_node = arg->upper_node;
+    VALUE ret = arg->ret;
+    dnode_t* node;
+
+    ITER_LEV(self)++;
+    for (node = lower_node;;
+         node = dict_next(dict, node)) {
+
+        rb_ary_push(ret, ASSOC(node));
         if (node == upper_node)
             break;
     }
@@ -1346,13 +1364,20 @@ rbtree_bound(int argc, VALUE* argv, VALUE self)
     dnode_t* lower_node;
     dnode_t* upper_node;
     VALUE ret;
+    VALUE (*body)(VALUE);
 
     if (argc == 0 || argc > 2)
         rbtree_argc_error();
 
     lower_node = dict_lower_bound(dict, TO_KEY(argv[0]));
     upper_node = dict_upper_bound(dict, TO_KEY(argv[argc - 1]));
-    ret = rb_block_given_p() ? self : rb_ary_new();
+    if (rb_block_given_p()) {
+        ret = self;
+        body = rbtree_bound_body;
+    } else {
+        ret = rb_ary_new();
+        body = rbtree_bound_push;
+    }
 
     if (lower_node == NULL || upper_node == NULL ||
         COMPARE(self)(dnode_getkey(lower_node),
@@ -1366,8 +1391,7 @@ rbtree_bound(int argc, VALUE* argv, VALUE self)
         arg.upper_node = upper_node;
         arg.ret = ret;
 
-        return rb_ensure(rbtree_bound_body, (VALUE)&arg,
-                         rbtree_each_ensure, self);
+        return rb_ensure(body, (VALUE)&arg, rbtree_each_ensure, self);
     }
 }
 
