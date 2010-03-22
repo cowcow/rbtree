@@ -515,8 +515,9 @@ rbtree_each_ensure(VALUE self)
 }
 
 static VALUE
-rbtree_each_body(rbtree_each_arg_t* arg)
+rbtree_each_body(VALUE arg_)
 {
+    rbtree_each_arg_t* arg = (rbtree_each_arg_t*)arg_;
     VALUE self = arg->self;
     dict_t* dict = DICT(self);
     dnode_t* node;
@@ -817,8 +818,9 @@ typedef struct {
 } rbtree_delete_if_arg_t;
 
 static VALUE
-rbtree_delete_if_ensure(rbtree_delete_if_arg_t* arg)
+rbtree_delete_if_ensure(VALUE arg_)
 {
+    rbtree_delete_if_arg_t* arg = (rbtree_delete_if_arg_t*)arg_;
     dict_t* dict = DICT(arg->self);
     dnode_list_t* list = arg->list;
 
@@ -835,8 +837,9 @@ rbtree_delete_if_ensure(rbtree_delete_if_arg_t* arg)
 }
 
 static VALUE
-rbtree_delete_if_body(rbtree_delete_if_arg_t* arg)
+rbtree_delete_if_body(VALUE arg_)
 {
+    rbtree_delete_if_arg_t* arg = (rbtree_delete_if_arg_t*)arg_;
     VALUE self = arg->self;
     dict_t* dict = DICT(self);
     dnode_t* node;
@@ -1300,8 +1303,9 @@ typedef struct {
 } rbtree_bound_arg_t;
 
 static VALUE
-rbtree_bound_body(rbtree_bound_arg_t* arg)
+rbtree_bound_body(VALUE arg_)
 {
+    rbtree_bound_arg_t* arg = (rbtree_bound_arg_t*)arg_;
     VALUE self = arg->self;
     dict_t* dict = DICT(self);
     dnode_t* lower_node = arg->lower_node;
@@ -1500,8 +1504,9 @@ pp_object_group(VALUE arg_)
 }
 
 static VALUE
-pp_block(VALUE nil, pp_arg_t* arg)
+pp_block(VALUE nil, VALUE arg_)
 {
+    pp_arg_t* arg = (pp_arg_t*)arg_;
     VALUE pp = arg->pp;
     VALUE rbtree = arg->rbtree;
 
